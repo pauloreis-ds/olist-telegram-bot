@@ -50,10 +50,10 @@ def check_response(response):
 app = Flask(__name__)
 
 
-@app.route('/{}'.format(TOKEN), methods=['POST'])
+@app.route('/', methods=['GET','POST'])
 def bot_answer():
     # if request.method == 'POST':
-    message = request.get_json(force=True)
+    message = request.get_json()
 
     chat_id, region = parse_message(message)
 

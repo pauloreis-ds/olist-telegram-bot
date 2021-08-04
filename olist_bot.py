@@ -9,10 +9,10 @@ BOT_BASE_URL = 'https://api.telegram.org/bot' + TOKEN
 BOT_GET_ME = BOT_BASE_URL + '/getMe'
 BOT_UPDATE = BOT_BASE_URL + '/getUpdates'
 BOT_SEND_MESSAGE = BOT_BASE_URL + '/sendMessage?chat_id='
-print(BOT_GET_ME)
-print(BOT_SEND_MESSAGE)
-print(BOT_UPDATE)
-print(BOT_SEND_MESSAGE+str(1934548946)+'&text=sadasd')
+print("BOT_GET_ME: ", BOT_GET_ME)
+print("BOT_SEND_MESSAGE: ", BOT_SEND_MESSAGE)
+print("BOT_UPDATE: ", BOT_UPDATE)
+print("BOT_SEND_MESSAGE: ", BOT_SEND_MESSAGE+str(1934548946)+'&text=sadasd')
 
 
 def send_message(chat_id, text):
@@ -50,28 +50,37 @@ def check_response(response):
 app = Flask(__name__)
 
 
-@app.route('/', methods=['POST', 'GET'])
-def index():
-    if request.method == 'POST':
-        message = request.get_json()
+@app.route('/{}'.format(TOKEN), methods=['POST'])
+def bot_answer():
+    # if request.method == 'POST':
+    message = request.get_json(force=True)
 
-        chat_id, region = parse_message(message)
+    chat_id, region = parse_message(message)
 
-        response = forecast(region)
-        response, is_prediction = check_response(response)
+    response = forecast(region)
+    response, is_prediction = check_response(response)
 
-        if is_prediction:
-            message = '''{} region will sell:\n  R${:,.2f} in July.\n  R${:,.2f} in August.\n  R${:,.2f} in September.'''.\
-                        format(region, float(response[0]), float(response[1]), float(response[2]))
-            send_message(chat_id, message)
-            return Response('Ok', status=200)
-        else:
-            send_message(chat_id, response)
-            return Response('Ok', status=200)
+    if is_prediction:
+        message = '''{} region will sell:\n  R${:,.2f} in July.\n  R${:,.2f} in August.\n  R${:,.2f} in September.'''.\
+                    format(region, float(response[0]), float(response[1]), float(response[2]))
+        send_message(chat_id, message)
+        return Response('Ok', status=200)
     else:
-        return f"<h1>{request.get_json()}</h1>"
+        send_message(chat_id, response)
+        return Response('Ok', status=200)
 
 
 if __name__ == "__main__":
     port = os.environ.get('PORT', 5000)
     app.run(host='0.0.0.0', port=port)
+
+    # region = "nordeste"
+    # response = forecast(region)
+    # response, is_prediction = check_response(response)
+    #
+    # if is_prediction:
+    #     message = '''{} region will sell:\n  R$ {:,.2f} in July.\n  R$ {:,.2f} in August.\n  R$ {:,.2f} in September.'''. \
+    #         format(region, float(response[0]), float(response[1]), float(response[2]))
+    #     print(message)
+    # else:
+    #     print(response)
